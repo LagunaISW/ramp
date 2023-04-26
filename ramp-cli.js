@@ -1,50 +1,9 @@
 #!/usr/bin/env node
-import fs from 'fs';
 import inquirer from 'inquirer';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
-import {
-  extractModelsWithProperties,
-  readPrismaSchema,
-  createFileIfNotExists,
-} from './utils.js';
-import {
-  promptForFilter,
-  promptForFilterProperty,
-  promptForModel,
-} from './prompts.js';
-import {
-  generateFilesForModel,
-  loadAndCompileTemplates,
-} from './generators.js';
-
-async function createRAMP() {
-  const prismaSchema = await readPrismaSchema();
-  const modelsWithProperties = extractModelsWithProperties(prismaSchema);
-
-  const modelNames = Object.keys(modelsWithProperties).filter(
-    (modelName) => modelName !== 'Password'
-  );
-
-  const {
-    dashboardTsxTemplateCompiled,
-    dashboardTemplateContentPathTemplateCompiled,
-  } = await loadAndCompileTemplates();
-
-  await createFileIfNotExists(
-    `./app/routes/dashboard.tsx`,
-    dashboardTsxTemplateCompiled({ modelNames }),
-    'Archivo dashboard.tsx creado',
-    'El archivo ya existe. No se sobrescribirá.'
-  );
-
-  await createFileIfNotExists(
-    `./app/routes/dashboard._index.tsx`,
-    dashboardTemplateContentPathTemplateCompiled({}),
-    'Archivo dashboard._index.tsx creado',
-    'El archivo ya existe. No se sobrescribirá.'
-  );
-}
+import { createRAMP } from './commands/createRAMP.js';
+import { generateModelFiles } from './commands/generateModelFiles.js';
 
 yargs(hideBin(process.argv))
   .command(
@@ -55,35 +14,6 @@ yargs(hideBin(process.argv))
   )
   .help()
   .parse();
-
-async function generateModelFiles() {
-  const prismaSchema = await readPrismaSchema();
-  const modelsWithProperties = extractModelsWithProperties(prismaSchema);
-
-  const modelNames = Object.keys(modelsWithProperties).filter(
-    (modelName) => modelName !== 'Password'
-  );
-
-  const selectedModel = await promptForModel(modelNames);
-  const addFilter = await promptForFilter();
-
-  if (addFilter) {
-    const filterProperty = await promptForFilterProperty(
-      modelsWithProperties[selectedModel]
-    );
-    await generateFilesForModel(
-      selectedModel,
-      modelsWithProperties[selectedModel],
-      addFilter,
-      filterProperty
-    );
-  } else {
-    await generateFilesForModel(
-      selectedModel,
-      modelsWithProperties[selectedModel]
-    );
-  }
-}
 
 yargs(hideBin(process.argv))
   .command(
