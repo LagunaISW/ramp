@@ -29,7 +29,11 @@ function extractProperties(modelName, schema) {
     .map((line) => {
       const [property, type, ...rest] = line.trim().split(/\s+/);
       return { property, type };
-    });
+    })
+    .filter(
+      (property) =>
+        !['createdAt', 'updatedAt', 'id', ''].includes(property.property)
+    );
 
   return properties;
 }
@@ -123,7 +127,9 @@ function generateFilesForModel(
   indexTsxTemplateCompiled,
   createTsxTemplateCompiled,
   modelServerTemplateCompiled,
-  modelsWithProperties
+  modelsWithProperties,
+  addFilter = false,
+  filterProperty = null
 ) {
   const indexTsxContent = indexTsxTemplateCompiled({ modelName });
   if (!fs.existsSync(`./app/routes/dashboard.${modelName}._index.tsx`)) {
@@ -140,17 +146,11 @@ function generateFilesForModel(
     );
   }
 
-  const enhancedProperties = properties
-    .filter(
-      (property) =>
-        !['createdAt', 'updatedAt', 'id', ''].includes(property.property)
-    )
-    .map((property) => {
-      const defaultValue = property.type === 'String' ? "''" : 'null';
-      const inputType =
-        property.type === 'DateTime' ? 'datetime-local' : 'text';
-      return { name: property.property, defaultValue, inputType };
-    });
+  const enhancedProperties = properties.map((property) => {
+    const defaultValue = property.type === 'String' ? "''" : 'null';
+    const inputType = property.type === 'DateTime' ? 'datetime-local' : 'text';
+    return { name: property.property, defaultValue, inputType };
+  });
 
   const createTsxContent = createTsxTemplateCompiled({
     modelName,
@@ -179,6 +179,8 @@ function generateFilesForModel(
   const modelServerContent = modelServerTemplateCompiled({
     modelName,
     properties: enhancedProperties,
+    addFilter,
+    filterProperty,
   });
 
   if (!fs.existsSync(`./app/models/dashboard/${modelName}.server.ts`)) {
@@ -273,20 +275,62 @@ yargs(hideBin(process.argv))
           },
         ]);
 
-        const {
-          indexTsxTemplateCompiled,
-          createTsxTemplateCompiled,
-          modelServerTemplateCompiled,
-        } = await loadAndCompileTemplates();
+        const { addFilter } = await inquirer.prompt([
+          {
+            type: 'confirm',
+            name: 'addFilter',
+            message: '¿Desea agregar un filtro?',
+            default: false,
+          },
+        ]);
 
-        generateFilesForModel(
-          selectedModel,
-          modelsWithProperties[selectedModel],
-          indexTsxTemplateCompiled,
-          createTsxTemplateCompiled,
-          modelServerTemplateCompiled,
-          modelsWithProperties
-        );
+        console.log({ addFilter });
+
+        // Si el usuario quiere agregar un filtro, se le pregunta por la propiedad a filtrar
+        if (addFilter) {
+          const { filterProperty } = await inquirer.prompt([
+            {
+              type: 'list',
+              name: 'filterProperty',
+              message: 'Seleccione una propiedad para filtrar:',
+              choices: modelsWithProperties[selectedModel].map(
+                (property) => property.property
+              ),
+            },
+          ]);
+
+          const {
+            indexTsxTemplateCompiled,
+            createTsxTemplateCompiled,
+            modelServerTemplateCompiled,
+          } = await loadAndCompileTemplates();
+
+          generateFilesForModel(
+            selectedModel,
+            modelsWithProperties[selectedModel],
+            indexTsxTemplateCompiled,
+            createTsxTemplateCompiled,
+            modelServerTemplateCompiled,
+            modelsWithProperties,
+            addFilter,
+            filterProperty
+          );
+        } else {
+          const {
+            indexTsxTemplateCompiled,
+            createTsxTemplateCompiled,
+            modelServerTemplateCompiled,
+          } = await loadAndCompileTemplates();
+
+          generateFilesForModel(
+            selectedModel,
+            modelsWithProperties[selectedModel],
+            indexTsxTemplateCompiled,
+            createTsxTemplateCompiled,
+            modelServerTemplateCompiled,
+            modelsWithProperties
+          );
+        }
       });
     }
   )

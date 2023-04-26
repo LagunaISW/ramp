@@ -12,6 +12,7 @@ export function get{{modelName}}({
   });
 }
 
+{{#if addFilter}}
 function isStatus(status?: string) {
   if (!status) return false;
 
@@ -20,11 +21,16 @@ function isStatus(status?: string) {
 
 export function get{{modelName}}ListItems(filter?: string) {
   if (isStatus(filter)) {
-    return prisma.{{camelCase modelName}}.findMany({ where: { status: filter }, orderBy: { name: "asc" } })
+    return prisma.{{camelCase modelName}}.findMany({ where: { {{filterProperty}}: filter }, orderBy: { {{filterProperty}}: "asc" } })
   }
 
-  return prisma.{{camelCase modelName}}.findMany({ orderBy: { name: "asc" } });
+  return prisma.{{camelCase modelName}}.findMany();
 }
+{{else}}
+export function get{{modelName}}ListItems() {
+  return prisma.{{camelCase modelName}}.findMany();
+}
+{{/if}}
 
 export function create{{modelName}}({
   {{#each properties}}
