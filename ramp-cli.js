@@ -5,8 +5,6 @@ import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import {
   extractModelsWithProperties,
-  loadAndCompileTemplates,
-  generateFilesForModel,
   readPrismaSchema,
   createFileIfNotExists,
 } from './utils.js';
@@ -15,6 +13,10 @@ import {
   promptForFilterProperty,
   promptForModel,
 } from './prompts.js';
+import {
+  generateFilesForModel,
+  loadAndCompileTemplates,
+} from './generators.js';
 
 async function createRAMP() {
   const prismaSchema = await readPrismaSchema();
