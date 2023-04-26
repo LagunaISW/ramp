@@ -1,0 +1,16 @@
+export default function Create{{modelName}}() {
+return (
+<div>
+  <h2>Create a new {{modelName}}</h2>
+  <form>
+    {{#each properties}}
+    <div>
+      <label htmlFor="{{name}}">{{capitalize name}}:</label>
+      <input type="{{inputType}}" id="{{name}}" name="{{name}}" value={ {{{defaultValue}}} } />
+    </div>
+    {{/each}}
+    <button type="submit">Create {{modelName}}</button>
+  </form>
+</div>
+);
+}

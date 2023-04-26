@@ -1,0 +1,69 @@
+import type { {{modelName}} } from "@prisma/client";
+
+import { prisma } from "~/db.server";
+
+export type { {{modelName}} } from "@prisma/client";
+
+export function get{{modelName}}({
+  id,
+}: Pick<{{modelName}}, "id">) {
+  return prisma.{{camelCase modelName}}.findFirst({
+    where: { id },
+  });
+}
+
+function isStatus(status?: string) {
+  if (!status) return false;
+
+  return status === "confirmed" || status === "declined" || status === "pending";
+}
+
+export function get{{modelName}}ListItems(filter?: string) {
+  if (isStatus(filter)) {
+    return prisma.{{camelCase modelName}}.findMany({ where: { status: filter }, orderBy: { name: "asc" } })
+  }
+
+  return prisma.{{camelCase modelName}}.findMany({ orderBy: { name: "asc" } });
+}
+
+export function create{{modelName}}({
+  {{#each properties}}
+  {{lowercaseWithId name}},
+  {{/each}}
+}: Pick<{{modelName}}, {{#each properties}}"{{lowercaseWithId name}}"{{#unless @last}} | {{/unless}}{{/each}}>) {
+  let data = {
+    {{#each properties}}
+    {{lowercaseWithId name}},
+    {{/each}}
+  };
+
+  return prisma.{{camelCase modelName}}.create({
+    data: data,
+  });
+}
+
+export function update{{modelName}}({
+  id,
+  {{#each properties}}
+  {{lowercaseWithId name}},
+  {{/each}}
+}: Pick<{{modelName}}, "id" | {{#each properties}}"{{lowercaseWithId name}}"{{#unless @last}} | {{/unless}}{{/each}}>) {
+  let data = {
+    {{#each properties}}
+    {{lowercaseWithId name}},
+    {{/each}}
+  };
+
+  return prisma.{{camelCase modelName}}.updateMany({
+    where: { id },
+    data: data,
+  });
+}
+
+export function delete{{modelName}}({
+  id,
+}: Pick<{{modelName}}, "id">) {
+  return prisma.{{camelCase modelName}}.deleteMany({
+    where: { id },
+  });
+}

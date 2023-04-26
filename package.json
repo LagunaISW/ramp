@@ -1,0 +1,22 @@
+{
+  "name": "ramp",
+  "version": "0.0.1",
+  "description": "Remix admin page generator",
+  "main": "index.js",
+  "bin": {
+    "ramp": "./ramp-cli.js"
+  },
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "commander": "^10.0.0",
+    "fs-extra": "^10.0.0",
+    "handlebars": "^4.7.7",
+    "inquirer": "^8.2.5",
+    "yargs": "^17.7.1"
+  },
+  "author": "l4guna",
+  "license": "MIT"
+}

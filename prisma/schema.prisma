@@ -1,0 +1,72 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String    @id @default(cuid())
+  email     String    @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  password  Password?
+  notes     Note[]
+}
+
+model Password {
+  hash   String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId String @unique
+}
+
+model Note {
+  id        String   @id @default(cuid())
+  title     String
+  body      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId    String
+}
+
+model CreditCard {
+  id             String   @id @default(cuid())
+  number         String
+  provider       String
+  cvv            String
+  pin            String
+  expirationDate DateTime
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  Client         Client?
+}
+
+model Analyst {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  Client    Client[]
+}
+
+model Client {
+  id             String     @id @default(cuid())
+  email          String     @unique
+  phone          String
+  name           String
+  middleName     String
+  lastName       String
+  secondLastName String
+  birthDate      DateTime
+  status         Int
+  analyst        Analyst    @relation(fields: [analystId], references: [id])
+  analystId      String
+  creditCard     CreditCard @relation(fields: [creditCardId], references: [id])
+  creditCardId   String     @unique
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+}
