@@ -143,7 +143,7 @@ function generateFilesForModel(
   const enhancedProperties = properties
     .filter(
       (property) =>
-        !['createdAt', 'updatedAt', 'id'].includes(property.property)
+        !['createdAt', 'updatedAt', 'id', ''].includes(property.property)
     )
     .map((property) => {
       const defaultValue = property.type === 'String' ? "''" : 'null';
@@ -171,13 +171,21 @@ function generateFilesForModel(
     );
   }
 
+  // Crear la carpeta ./app/models/dashboard si no existe
+  if (!fs.existsSync('./app/models/dashboard')) {
+    fs.mkdirSync('./app/models/dashboard');
+  }
+
   const modelServerContent = modelServerTemplateCompiled({
     modelName,
     properties: enhancedProperties,
   });
 
-  if (!fs.existsSync(`./app/models/${modelName}.server.ts`)) {
-    fs.writeFileSync(`./app/models/${modelName}.server.ts`, modelServerContent);
+  if (!fs.existsSync(`./app/models/dashboard/${modelName}.server.ts`)) {
+    fs.writeFileSync(
+      `./app/models/dashboard/${modelName}.server.ts`,
+      modelServerContent
+    );
     console.log(
       `Archivo ${modelName}.server.ts creado para el modelo ${modelName}.`
     );
