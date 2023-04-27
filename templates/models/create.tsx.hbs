@@ -6,7 +6,7 @@ return (
     {{#each properties}}
     <div>
       <label htmlFor="{{name}}">{{capitalize name}}:</label>
-      <input type="{{inputType}}" id="{{name}}" name="{{name}}" value={ {{{defaultValue}}} } />
+      <input type="{{inputType}}" id="{{name}}" name="{{name}}" defaultValue={ {{{defaultValue}}} } />
     </div>
     {{/each}}
     <button type="submit">Create {{modelName}}</button>

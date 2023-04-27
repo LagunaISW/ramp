@@ -70,3 +70,35 @@ export function createFileIfNotExists(
     }
   });
 }
+
+const propertyConfigurations = {
+  String: { inputType: 'text', defaultValue: '""' },
+  Number: { inputType: 'number', defaultValue: '0' },
+  Float: { inputType: 'number', defaultValue: '0' },
+  Decimal: { inputType: 'number', defaultValue: '0' },
+  Int: { inputType: 'number', defaultValue: '0' },
+  Boolean: { inputType: 'text', defaultValue: 'false' },
+  DateTime: { inputType: 'datetime-local', defaultValue: 'null' },
+  Date: { inputType: 'date', defaultValue: 'null' },
+  Time: { inputType: 'time', defaultValue: 'null' },
+};
+
+const getPropertyConfigurations = (property) => {
+  const inputType = property.type;
+  const { inputType: defaultInputType, defaultValue } =
+    propertyConfigurations[inputType] || {};
+
+  if (!defaultInputType) return { name: 'deleteThisProperty' };
+
+  return {
+    name: property.property,
+    inputType: defaultInputType || 'text',
+    defaultValue: defaultValue || 'null',
+  };
+};
+
+export const getFormValues = (properties) => {
+  return properties
+    .map(getPropertyConfigurations)
+    .filter((property) => property.name !== 'deleteThisProperty');
+};

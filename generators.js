@@ -2,7 +2,7 @@ import promises from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import Handlebars from 'handlebars';
-import { createFileIfNotExists } from './utils.js';
+import { createFileIfNotExists, getFormValues } from './utils.js';
 
 // Registra el helper 'capitalize'
 Handlebars.registerHelper('capitalize', (str) => {
@@ -115,15 +115,9 @@ async function createCreateFile(
   properties,
   createTsxTemplateCompiled
 ) {
-  const enhancedProperties = properties.map((property) => {
-    const defaultValue = property.type === 'String' ? "''" : 'null';
-    const inputType = property.type === 'DateTime' ? 'datetime-local' : 'text';
-    return { name: property.property, defaultValue, inputType };
-  });
-
   const createTsxContent = createTsxTemplateCompiled({
     modelName,
-    properties: enhancedProperties,
+    properties: getFormValues(properties),
   });
   const filePath = `./app/routes/dashboard.${modelName}.create.tsx`;
 
