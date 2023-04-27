@@ -38,6 +38,17 @@ Handlebars.registerHelper('lowercaseWithId', function (str) {
   return newWords.join(' ');
 });
 
+// Registra el helper 'pluralize' para pluralizar la terminación de una palabra en ingles
+Handlebars.registerHelper('pluralize', function (str) {
+  if (!str) return str;
+  const lastLetter = str.charAt(str.length - 1);
+  if (lastLetter === 'y') {
+    return str.slice(0, str.length - 1) + 'ies';
+  } else {
+    return str + 's';
+  }
+});
+
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
 
 const templateDir = path.join(currentDir, 'templates');
@@ -86,7 +97,12 @@ export async function generateFilesForModel(
   filterProperty = null
 ) {
   const templates = await loadAndCompileTemplates();
-  await createIndexFile(modelName, templates.indexTsxTemplateCompiled);
+  await createIndexFile(
+    modelName,
+    properties,
+    addFilter,
+    templates.indexTsxTemplateCompiled
+  );
   await createCreateFile(
     modelName,
     properties,
@@ -101,8 +117,17 @@ export async function generateFilesForModel(
   );
 }
 
-async function createIndexFile(modelName, indexTsxTemplateCompiled) {
-  const indexTsxContent = indexTsxTemplateCompiled({ modelName });
+async function createIndexFile(
+  modelName,
+  properties,
+  addFilter,
+  indexTsxTemplateCompiled
+) {
+  const indexTsxContent = indexTsxTemplateCompiled({
+    modelName,
+    properties: getFormValues(properties),
+    addFilter,
+  });
   const filePath = `./app/routes/dashboard.${modelName}._index.tsx`;
 
   await createFileIfNotExists(
@@ -157,7 +182,6 @@ async function createModelServerFile(
 
     return validTypes.includes(type);
   });
-  console.log(filteredProperties);
 
   const modelServerContent = modelServerTemplateCompiled({
     modelName,
