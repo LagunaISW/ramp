@@ -30,7 +30,7 @@ export async function promptForFilterProperty(properties) {
       type: 'list',
       name: 'filterProperty',
       message: 'Seleccione una propiedad para filtrar:',
-      choices: properties.map((property) => property.property),
+      choices: properties.map((property) => property.name),
     },
   ]);
   return filterProperty;

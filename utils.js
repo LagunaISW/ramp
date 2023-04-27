@@ -32,11 +32,11 @@ function extractProperties(modelName, schema) {
     .split('\n')
     .map((line) => {
       const [property, type, ...rest] = line.trim().split(/\s+/);
-      return { property, type };
+      return { name: property, type };
     })
     .filter(
       (property) =>
-        !['createdAt', 'updatedAt', 'id', ''].includes(property.property)
+        !['createdAt', 'updatedAt', 'id', ''].includes(property.name)
     );
 
   return properties;
@@ -91,7 +91,7 @@ const getPropertyConfigurations = (property) => {
   if (!defaultInputType) return { name: 'deleteThisProperty' };
 
   return {
-    name: property.property,
+    name: property.name,
     inputType: defaultInputType || 'text',
     defaultValue: defaultValue || 'null',
   };

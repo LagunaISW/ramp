@@ -3,10 +3,10 @@ import type { LoaderArgs } from "@remix-run/server-runtime";
 import { json } from "@remix-run/server-runtime";
 
 export async function loader({ request }: LoaderArgs) {
-const searchParams = new URL(request.url).searchParams as any;
-const { filter } = Object.fromEntries(searchParams.entries());
+  const searchParams = new URL(request.url).searchParams as any;
+  const { filter } = Object.fromEntries(searchParams.entries());
 
-return json({ filter });
+  return json({ filter });
 }
 
 export default function {{modelName}}() {

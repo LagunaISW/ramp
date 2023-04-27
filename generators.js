@@ -6,6 +6,7 @@ import { createFileIfNotExists, getFormValues } from './utils.js';
 
 // Registra el helper 'capitalize'
 Handlebars.registerHelper('capitalize', (str) => {
+  if (!str) return str;
   return str.charAt(0).toUpperCase() + str.slice(1);
 });
 
@@ -15,6 +16,7 @@ function pascalToCamel(str) {
 
 // Registra el helper 'camelCase'
 Handlebars.registerHelper('camelCase', (str) => {
+  if (!str) return str;
   const pascalText = str
     .replace(/[^a-zA-Z0-9]/g, ' ')
     .split(' ')
@@ -24,6 +26,7 @@ Handlebars.registerHelper('camelCase', (str) => {
 });
 
 Handlebars.registerHelper('lowercaseWithId', function (str) {
+  if (!str) return str;
   const words = str.split(' ');
   const newWords = words.map((word) => {
     if (/^[A-Z]/.test(word)) {
@@ -136,15 +139,29 @@ async function createModelServerFile(
   filterProperty,
   modelServerTemplateCompiled
 ) {
-  const enhancedProperties = properties.map((property) => {
-    const defaultValue = property.type === 'String' ? "''" : 'null';
-    const inputType = property.type === 'DateTime' ? 'datetime-local' : 'text';
-    return { name: property.property, defaultValue, inputType };
+  const filteredProperties = properties.filter((property) => {
+    const { type } = property;
+
+    const validTypes = [
+      'String',
+      'Date',
+      'Int',
+      'Boolean',
+      'Number',
+      'Float',
+      'Decimal',
+      'DateTime',
+      'Date',
+      'Time',
+    ];
+
+    return validTypes.includes(type);
   });
+  console.log(filteredProperties);
 
   const modelServerContent = modelServerTemplateCompiled({
     modelName,
-    properties: enhancedProperties,
+    properties: filteredProperties,
     addFilter,
     filterProperty,
   });
