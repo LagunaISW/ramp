@@ -6,7 +6,7 @@ import {
 } from '../prompts.js';
 import { generateFilesForModel } from '../generators.js';
 
-export async function generateModelFiles() {
+export async function generateModelFiles(argv) {
   const prismaSchema = await readPrismaSchema();
   const modelsWithProperties = extractModelsWithProperties(prismaSchema);
 
@@ -24,13 +24,15 @@ export async function generateModelFiles() {
     await generateFilesForModel(
       selectedModel,
       modelsWithProperties[selectedModel],
+      argv.force,
       addFilter,
       filterProperty
     );
   } else {
     await generateFilesForModel(
       selectedModel,
-      modelsWithProperties[selectedModel]
+      modelsWithProperties[selectedModel],
+      argv.force
     );
   }
 }

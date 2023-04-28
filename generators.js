@@ -93,6 +93,7 @@ export async function loadAndCompileTemplates() {
 export async function generateFilesForModel(
   modelName,
   properties,
+  force = false,
   addFilter = false,
   filterProperty = null
 ) {
@@ -101,19 +102,22 @@ export async function generateFilesForModel(
     modelName,
     properties,
     addFilter,
-    templates.indexTsxTemplateCompiled
+    templates.indexTsxTemplateCompiled,
+    force
   );
   await createCreateFile(
     modelName,
     properties,
-    templates.createTsxTemplateCompiled
+    templates.createTsxTemplateCompiled,
+    force
   );
   await createModelServerFile(
     modelName,
     properties,
     addFilter,
     filterProperty,
-    templates.modelServerTemplateCompiled
+    templates.modelServerTemplateCompiled,
+    force
   );
 }
 
@@ -121,7 +125,8 @@ async function createIndexFile(
   modelName,
   properties,
   addFilter,
-  indexTsxTemplateCompiled
+  indexTsxTemplateCompiled,
+  force
 ) {
   const indexTsxContent = indexTsxTemplateCompiled({
     modelName,
@@ -134,14 +139,16 @@ async function createIndexFile(
     filePath,
     indexTsxContent,
     `Archivo index.tsx creado para el modelo dashboard.${modelName}.`,
-    `El archivo ya existe para el modelo dashboard.${modelName}. No se sobrescribirá.`
+    `El archivo ya existe para el modelo dashboard.${modelName}. No se sobrescribirá.`,
+    force
   );
 }
 
 async function createCreateFile(
   modelName,
   properties,
-  createTsxTemplateCompiled
+  createTsxTemplateCompiled,
+  force
 ) {
   const createTsxContent = createTsxTemplateCompiled({
     modelName,
@@ -153,7 +160,8 @@ async function createCreateFile(
     filePath,
     createTsxContent,
     `Archivo create.tsx creado para el modelo dashboard.${modelName}.`,
-    `El archivo ya existe para el modelo dashboard.${modelName}. No se sobrescribirá.`
+    `El archivo ya existe para el modelo dashboard.${modelName}. No se sobrescribirá.`,
+    force
   );
 }
 
@@ -162,7 +170,8 @@ async function createModelServerFile(
   properties,
   addFilter,
   filterProperty,
-  modelServerTemplateCompiled
+  modelServerTemplateCompiled,
+  force
 ) {
   const filteredProperties = properties.filter((property) => {
     const { type } = property;
@@ -195,6 +204,7 @@ async function createModelServerFile(
     filePath,
     modelServerContent,
     `Archivo ${modelName}.server.ts creado para el modelo ${modelName}.`,
-    `El archivo ya existe para el modelo ${modelName}.server No se sobrescribirá.`
+    `El archivo ya existe para el modelo ${modelName}.server No se sobrescribirá.`,
+    force
   );
 }

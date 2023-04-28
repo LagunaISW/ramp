@@ -18,8 +18,7 @@ export async function loader({ request }: LoaderArgs) {
   return json({ {{pluralize (camelCase modelName)}} });
 {{/if}}
 
-}
-
+} 
 export default function {{modelName}}() {
 {{#if addFilter}}
   const { filter, {{pluralize (camelCase modelName)}} } = useLoaderData<{ filter?: string, {{pluralize (camelCase modelName)}}: {{modelName}}Type[] }>();
@@ -80,7 +79,7 @@ export default function {{modelName}}() {
                 { {{camelCase modelName}}.createdAt}
               </td>
               <td className="relative py-4 pl-3 text-right text-sm font-medium">
-                <Link to={`/dashboard/{{modelName}}/${{modelName}}.id`} className="text-indigo-600 hover:text-indigo-900">
+                <Link to={`/dashboard/{{modelName}}/${ {{camelCase modelName}}.id}`} className="text-indigo-600 hover:text-indigo-900">
                 Edit
                 </Link>
               </td>

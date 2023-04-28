@@ -5,7 +5,7 @@ import {
 } from '../utils.js';
 import { loadAndCompileTemplates } from '../generators.js';
 
-export async function createRAMP() {
+export async function createRAMP(argv) {
   const prismaSchema = await readPrismaSchema();
   const modelsWithProperties = extractModelsWithProperties(prismaSchema);
 
@@ -22,13 +22,15 @@ export async function createRAMP() {
     `./app/routes/dashboard.tsx`,
     dashboardTsxTemplateCompiled({ modelNames }),
     'Archivo dashboard.tsx creado',
-    'El archivo ya existe. No se sobrescribirá.'
+    'El archivo ya existe. No se sobrescribirá.',
+    argv.force
   );
 
   await createFileIfNotExists(
     `./app/routes/dashboard._index.tsx`,
     dashboardTemplateContentPathTemplateCompiled({}),
     'Archivo dashboard._index.tsx creado',
-    'El archivo ya existe. No se sobrescribirá.'
+    'El archivo ya existe. No se sobrescribirá.',
+    argv.force
   );
 }

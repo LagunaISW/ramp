@@ -57,10 +57,11 @@ export function createFileIfNotExists(
   filePath,
   content,
   successMessage,
-  errorMessage
+  errorMessage,
+  force = false
 ) {
   return new Promise((resolve, reject) => {
-    if (!fs.existsSync(filePath)) {
+    if (!fs.existsSync(filePath) || force) {
       fs.writeFileSync(filePath, content);
       console.log(successMessage);
       resolve();
