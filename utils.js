@@ -63,10 +63,12 @@ function extractProperty(property) {
 
   if (name.includes('Id')) {
     result.relationalId = true;
+    result.generated = true;
   }
 
-  console.log({ property, result });
-
+  if (name.includes('createdAt') || name.includes('updatedAt')) {
+    result.generated = true;
+  }
   return result;
 }
 
@@ -82,11 +84,9 @@ function extractProperties(modelName, schema) {
     .map((line) => {
       return extractProperty(line);
     })
-    .filter(
-      (property) =>
-        !['createdAt', 'updatedAt', 'id', ''].includes(property.name)
-    );
+    .filter((property) => !property.generated);
 
+  console.log({ properties });
   return properties;
 }
 
@@ -133,21 +133,19 @@ const propertyConfigurations = {
 };
 
 const getPropertyConfigurations = (property) => {
-  const inputType = property.type;
-  const { inputType: defaultInputType, defaultValue } =
-    propertyConfigurations[inputType] || {};
-
-  if (!defaultInputType) return { name: 'deleteThisProperty' };
+  const { inputType, defaultValue } =
+    propertyConfigurations[property.type] || {};
 
   return {
     name: property.name,
-    inputType: defaultInputType || 'text',
+    inputType: inputType || 'text',
     defaultValue: defaultValue || 'null',
+    optional: property.optional,
+    relation: property.relation,
+    relationName: property.relationName,
   };
 };
 
 export const getFormValues = (properties) => {
-  return properties
-    .map(getPropertyConfigurations)
-    .filter((property) => property.name !== 'deleteThisProperty');
+  return properties.map(getPropertyConfigurations);
 };

@@ -189,7 +189,7 @@ async function createModelServerFile(
       'Time',
     ];
 
-    return validTypes.includes(type);
+    return validTypes.includes(type) || property.relation;
   });
 
   const modelServerContent = modelServerTemplateCompiled({

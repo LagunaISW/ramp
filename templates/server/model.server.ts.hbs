@@ -34,12 +34,20 @@ export function get{{modelName}}ListItems() {
 
 export function create{{modelName}}({
   {{#each properties}}
-  {{lowercaseWithId name}},
+  {{#if relation}}
+  {{relationName}},
+  {{else}}
+  {{name}},
+  {{/if}}
   {{/each}}
-}: Pick<{{modelName}}, {{#each properties}}"{{lowercaseWithId name}}"{{#unless @last}} | {{/unless}}{{/each}}>) {
+}: Pick<{{modelName}}, {{#each properties}}{{#if relation}}"{{relationName}}"{{#unless @last}} | {{/unless}}{{else}}"{{name}}"{{#unless @last}} | {{/unless}}{{/if}}{{/each}}>) {
   let data = {
     {{#each properties}}
-    {{lowercaseWithId name}},
+    {{#if relation}}
+    {{relationName}},
+    {{else}}
+    {{name}},
+    {{/if}}
     {{/each}}
   };
 
@@ -51,12 +59,20 @@ export function create{{modelName}}({
 export function update{{modelName}}({
   id,
   {{#each properties}}
-  {{lowercaseWithId name}},
+  {{#if relation}}
+  {{relationName}},
+  {{else}}
+  {{name}},
+  {{/if}}
   {{/each}}
-}: Pick<{{modelName}}, "id" | {{#each properties}}"{{lowercaseWithId name}}"{{#unless @last}} | {{/unless}}{{/each}}>) {
+}: Pick<{{modelName}}, "id" | {{#each properties}}{{#if relation}}"{{relationName}}"{{#unless @last}} | {{/unless}}{{else}}"{{name}}"{{#unless @last}} | {{/unless}}{{/if}}{{/each}}>) {
   let data = {
     {{#each properties}}
-    {{lowercaseWithId name}},
+    {{#if relation}}
+    {{relationName}},
+    {{else}}
+    {{name}},
+    {{/if}}
     {{/each}}
   };
 
