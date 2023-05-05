@@ -1,10 +1,16 @@
-import { Link, useActionData, Form } from "@remix-run/react";
+import { Link, useActionData, Form, useLoaderData } from "@remix-run/react";
 import type { ActionArgs } from "@remix-run/server-runtime";
 import { redirect, json } from "@remix-run/server-runtime";
 import invariant from "tiny-invariant";
 import { create{{modelName}} } from "~/models/dashboard/{{modelName}}.server";
 import { requireUserId } from "~/session.server";
 import { ExclamationCircleIcon } from "@heroicons/react/20/solid";
+
+{{#each properties}}
+{{#if relation}}
+import { get{{capitalize name}}ListItems } from "~/models/dashboard/{{capitalize name}}.server";
+{{/if}}
+{{/each}}
 
 function getClassName(error: boolean) {
   const errorClasses =
@@ -52,7 +58,7 @@ export async function action({ request }: ActionArgs) {
   {{/if}}
   {{/each}}
 
-  await createNote({
+  await create{{modelName}}({
     {{#each properties}}
     {{#if relation}}
     {{relationName}},
@@ -65,7 +71,29 @@ export async function action({ request }: ActionArgs) {
   return redirect(`/dashboard/{{modelName}}`);
 }
 
+export async function loader() {
+  {{#each properties}}
+  {{#if relation}}
+  const {{pluralize name}} = await get{{capitalize name}}ListItems();
+  {{/if}}
+  {{/each}}
+  return { 
+    {{#each properties}}
+    {{#if relation}}
+    {{pluralize name}},
+    {{/if}}
+    {{/each}}
+  };
+}
+
 export default function Create{{modelName}}() {
+  const {
+    {{#each properties}}
+    {{#if relation}}
+    {{pluralize name}},
+    {{/if}}
+    {{/each}}
+  } = useLoaderData<typeof loader>();
   const errors = useActionData<typeof action>();
   
   return (
@@ -84,9 +112,11 @@ export default function Create{{modelName}}() {
                 <select id="{{relationName}}" name="{{relationName}}" defaultValue={""}
                   className={getClassName(Boolean(errors?.{{relationName}}))}>
                   <option value="" disabled>Select {{name}}</option>
-                  {{#each relationValues}}
-                  <option value="{{id}}">{{name}}</option>
-                  {{/each}}
+                  { {{pluralize name}}.map((option) => (
+                  <option key={option.id} value={option.id}>
+                    {option.id}
+                  </option>
+                  ))}
                 </select>
                 {errors?.{{relationName}} ? (
                 <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">

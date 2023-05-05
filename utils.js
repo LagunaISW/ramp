@@ -69,6 +69,12 @@ function extractProperty(property) {
   if (name.includes('createdAt') || name.includes('updatedAt')) {
     result.generated = true;
   }
+
+  if (type.includes('[]')) {
+    result.generated = true;
+    result.type = type.replace('[]', '');
+  }
+
   return result;
 }
 
@@ -85,8 +91,6 @@ function extractProperties(modelName, schema) {
       return extractProperty(line);
     })
     .filter((property) => !property.generated);
-
-  console.log({ properties });
   return properties;
 }
 
@@ -147,5 +151,7 @@ const getPropertyConfigurations = (property) => {
 };
 
 export const getFormValues = (properties) => {
-  return properties.map(getPropertyConfigurations);
+  const result = properties.map(getPropertyConfigurations);
+  console.log(result);
+  return result;
 };
