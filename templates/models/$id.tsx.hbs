@@ -1,0 +1,177 @@
+import { Link, useActionData, Form, useLoaderData } from "@remix-run/react";
+import type { ActionArgs, LoaderArgs } from "@remix-run/server-runtime";
+import { redirect, json } from "@remix-run/server-runtime";
+import invariant from "tiny-invariant";
+import { get{{modelName}}, update{{modelName}} } from "~/models/dashboard/{{modelName}}.server";
+import { requireUserId } from "~/session.server";
+import { ExclamationCircleIcon } from "@heroicons/react/20/solid";
+
+{{#each properties}}
+{{#if relation}}
+import { get{{capitalize name}}ListItems } from "~/models/dashboard/{{capitalize name}}.server";
+{{/if}}
+{{/each}}
+
+function getClassName(error: boolean) {
+  const errorClasses =
+  "pr-10 text-red-900 ring-red-300 placeholder:text-red-300 focus:ring-red-500 ";
+  const normalClasses =
+  "text-gray-900 shadow-sm ring-gray-300 placeholder:text-gray-400 focus:ring-indigo-600";
+  const className =
+  "block w-full rounded-md border-0 py-1.5 sm:text-sm sm:leading-6 focus:ring-inset ring-1 focus:ring-2 ring-inset ";
+
+  return error ? className + errorClasses : className + normalClasses;
+}
+
+export async function action({ request, params }: ActionArgs) {
+  const id = params.id as string;
+  const user = await requireUserId(request);
+  const formData = await request.formData();
+  const {
+    {{#each properties}}
+    {{#if relation}}
+    {{relationName}},
+    {{else}}
+    {{name}},
+    {{/if}}
+    {{/each}}
+  } = Object.fromEntries(formData);
+
+  const errors = {
+    {{#each properties}}
+    {{#if relation}}
+    {{relationName}}: {{relationName}} ? null : "{{capitalize name}} is required",
+    {{else}}
+    {{name}}: {{name}} ? null : "{{capitalize name}} is required",
+    {{/if}}
+    {{/each}}
+  };
+  const hasErrors = Object.values(errors).some((errorMessage) => errorMessage);
+  if (hasErrors) {
+    return json(errors);
+  }
+
+  {{#each properties}}
+  {{#if relation}}
+  invariant(typeof {{relationName}} === "string", "Invalid {{relationName}}");
+  {{else}}
+  invariant(typeof {{name}} === "string", "Invalid {{name}}");
+  {{/if}}
+  {{/each}}
+
+  await update{{modelName}}({
+    id,
+    {{#each properties}}
+    {{#if relation}}
+    {{relationName}},
+    {{else}}
+    {{name}},
+    {{/if}}
+    {{/each}}
+  });
+
+  return redirect(`/dashboard/{{modelName}}`);
+}
+
+export async function loader({ params }: LoaderArgs) {
+  const id = params.id as string;
+  const {{camelCase modelName}} = await get{{modelName}}({id});
+  {{#each properties}}
+  {{#if relation}}
+  const {{pluralize name}} = await get{{capitalize name}}ListItems();
+  {{/if}}
+  {{/each}}
+  return {
+    {{camelCase modelName}},
+    {{#each properties}}
+    {{#if relation}}
+    {{pluralize name}},
+    {{/if}}
+    {{/each}}
+  };
+}
+
+export default function Update{{modelName}}() {
+  const {
+    {{camelCase modelName}},
+  {{#each properties}}
+  {{#if relation}}
+    {{pluralize name}},
+  {{/if}}
+  {{/each}}
+  } = useLoaderData<typeof loader>();
+  const errors = useActionData<typeof action>();
+
+  return (
+    <div>
+      <h2>Update a new {{modelName}}</h2>
+      <Form method="post">
+        <div className="border-b border-gray-900/10 pb-12">
+          <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
+            {{#each properties}}
+            {{#if relation}}
+            <div className="sm:col-span-3">
+              <label htmlFor="{{relationName}}" className="block text-sm font-medium leading-6 text-gray-900">
+                {{capitalize name}}
+              </label>
+              <div className="relative mt-2">
+                <select id="{{relationName}}" name="{{relationName}}" defaultValue={ {{camelCase ../modelName}}?.{{relationName}} }
+                  className={getClassName(Boolean(errors?.{{relationName}}))}>
+                  <option value="" disabled>Select {{name}}</option>
+                  { {{pluralize name}}.map((option) => (
+                  <option key={option.id} value={option.id}>
+                    {option.id}
+                  </option>
+                  ))}
+                </select>
+                {errors?.{{relationName}} ? (
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                  <ExclamationCircleIcon className="h-5 w-5 text-red-500" aria-hidden="true" />
+                </div>
+                ) : null}
+              </div>
+              {errors?.{{relationName}} ? (
+              <p className="mt-2 text-sm text-red-600" id="email-error">
+                {errors?.{{relationName}} }
+              </p>
+              ) : null}
+            </div>
+            {{else}}
+            <div className="sm:col-span-3">
+              <label htmlFor="{{name}}" className="block text-sm font-medium leading-6 text-gray-900">
+                {{capitalize name}}
+              </label>
+              <div className="relative mt-2">
+                <input type="{{inputType}}" id="{{name}}" name="{{name}}" defaultValue={ {{camelCase ../modelName}}?.{{name}} }
+                  className={getClassName(Boolean(errors?.{{name}}))} />
+                {errors?.{{name}} ? (
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                  <ExclamationCircleIcon className="h-5 w-5 text-red-500" aria-hidden="true" />
+                </div>
+                ) : null}
+              </div>
+              {errors?.{{name}} ? (
+              <p className="mt-2 text-sm text-red-600" id="email-error">
+                {errors?.{{name}} }
+              </p>
+              ) : null}
+            </div>
+            {{/if}}
+            {{/each}}
+          </div>
+        </div>
+        <div className="mt-6 flex items-center justify-end gap-x-6">
+          <Link to="/dashboard/{{modelName}}">
+          <button type="button" className="text-sm font-semibold leading-6 text-gray-900">
+            Cancel
+          </button>
+          </Link>
+          <button type="submit"
+            className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+            Update {{modelName}}
+          </button>
+        </div>
+      </Form>
+    </div>
+  );
+}

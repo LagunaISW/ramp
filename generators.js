@@ -59,6 +59,7 @@ const dashboardTemplateIndexPath = path.join(
 );
 const indexTemplatePath = path.join(templateDir, 'models/index.tsx.hbs');
 const createTemplatePath = path.join(templateDir, 'models/create.tsx.hbs');
+const updateTemplatePath = path.join(templateDir, 'models/$id.tsx.hbs');
 const modelServerTemplatePath = path.join(
   templateDir,
   'server/model.server.ts.hbs'
@@ -71,12 +72,14 @@ export async function loadAndCompileTemplates() {
     indexTemplateContent,
     createTemplateContent,
     modelServerTemplateContent,
+    updateTemplateContent,
   ] = await Promise.all([
     promises.readFile(dashboardTemplatePath, 'utf-8'),
     promises.readFile(dashboardTemplateIndexPath, 'utf-8'),
     promises.readFile(indexTemplatePath, 'utf-8'),
     promises.readFile(createTemplatePath, 'utf-8'),
     promises.readFile(modelServerTemplatePath, 'utf-8'),
+    promises.readFile(updateTemplatePath, 'utf-8'),
   ]);
 
   return {
@@ -87,6 +90,7 @@ export async function loadAndCompileTemplates() {
     indexTsxTemplateCompiled: Handlebars.compile(indexTemplateContent),
     createTsxTemplateCompiled: Handlebars.compile(createTemplateContent),
     modelServerTemplateCompiled: Handlebars.compile(modelServerTemplateContent),
+    updateTsxTemplateCompiled: Handlebars.compile(updateTemplateContent),
   };
 }
 
@@ -111,6 +115,14 @@ export async function generateFilesForModel(
     templates.createTsxTemplateCompiled,
     force
   );
+
+  await createUpdateFile(
+    modelName,
+    properties,
+    templates.updateTsxTemplateCompiled,
+    force
+  );
+
   await createModelServerFile(
     modelName,
     properties,
@@ -160,6 +172,27 @@ async function createCreateFile(
     filePath,
     createTsxContent,
     `Archivo create.tsx creado para el modelo dashboard.${modelName}.`,
+    `El archivo ya existe para el modelo dashboard.${modelName}. No se sobrescribirá.`,
+    force
+  );
+}
+
+async function createUpdateFile(
+  modelName,
+  properties,
+  updateTsxTemplateCompiled,
+  force
+) {
+  const updateTsxContent = updateTsxTemplateCompiled({
+    modelName,
+    properties: getFormValues(properties),
+  });
+  const filePath = `./app/routes/dashboard.${modelName}.$id.tsx`;
+
+  await createFileIfNotExists(
+    filePath,
+    updateTsxContent,
+    `Archivo $id.tsx creado para el modelo dashboard.${modelName}.`,
     `El archivo ya existe para el modelo dashboard.${modelName}. No se sobrescribirá.`,
     force
   );
